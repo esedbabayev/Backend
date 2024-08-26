@@ -1,24 +1,32 @@
 import express from "express";
-import dotenv from "dotenv";
 import mongoose from "mongoose";
+import dotenv from "dotenv";
+import cookieParser from "cookie-parser";
+
+// Routes
 import AuthRouter from "./routes/auth.routes.js";
-
-
 
 const server = express();
 
 dotenv.config();
 
-// Middleware
-server.use("/users", AuthRouter);
+server.use(express.json());
+server.use(cookieParser());
 
-server.listen(process.env.PORT, () => {
-  console.log(`Server is listening on PORT: ${process.env.PORT}`);
+server.use("/auth", AuthRouter);
+
+const PORT = process.env.PORT;
+const MONGODB_URL = process.env.MONGODB_URL;
+
+server.listen(PORT, () => {
+  console.log(`server is listening on port: ${PORT}`);
 });
 
 mongoose
-  .connect(process.env.MONGODB_URL)
+  .connect(MONGODB_URL)
   .then(() => {
-    console.log("Database connection established");
+    console.log("database connection established");
   })
-  .catch((err) => console.log(err));
+  .catch((err) => {
+    console.log(err);
+  });
