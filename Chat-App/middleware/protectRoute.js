@@ -6,7 +6,7 @@ export const protectRoute = (request, response, next) => {
   if (!token) {
     return response
       .status(500)
-      .send({ message: " No token provided. Authorization failed." });
+      .send({ message: "No token provided. Authorization failed." });
   }
 
   const decode = jwt.decode(token, process.env.JWT_SECRET);
