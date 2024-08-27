@@ -6,28 +6,44 @@ import bcrypt from "bcrypt";
 export const signIn = async (request, response) => {
   const { userName, password } = request.body;
 
+  // Check for empty fields
   if (!userName || !password) {
-    response.status(400).send({ message: "please fill all the fields" });
-    return;
+    return response.status(400).send({ message: "Please fill all the fields" });
   }
 
   try {
+    // Check if user exists
     const existingUser = await User.findOne({ userName });
 
     if (!existingUser) {
-      response.status(400).send({ message: "wrong username or password" });
-      return;
+      return response
+        .status(400)
+        .send({ message: "Wrong username or password" });
     }
 
-    const isCorrectPassword = await bcrypt.compare(password, User.password);
-    console.log(isCorrectPassword);
-    
+    // Compare passwords
+    const isCorrectPassword = await bcrypt.compare(
+      password,
+      existingUser.password
+    );
 
     if (!isCorrectPassword) {
-      response.status(400).send({ message: "wrong username or password" });
-      return;
+      return response
+        .status(400)
+        .send({ message: "Wrong username or password" });
     }
-  } catch {}
+
+    // Generate token and set cookies
+    generateTokenAndSetCookies(existingUser._id, response);
+
+    // Respond with success
+    return response
+      .status(200)
+      .send({ message: "Signed in successfully", data: existingUser });
+  } catch (error) {
+    console.error("Error during sign in:", error);
+    return response.status(500).send({ message: "Something went wrong" });
+  }
 };
 
 export const signUp = async (request, response) => {
@@ -76,5 +92,9 @@ export const signUp = async (request, response) => {
 };
 
 export const logOut = async (request, response) => {
-  response.cookie();
+  // Clear the JWT cookie
+  response.cookie("jwt", "", { maxAge: 0, httpOnly: true, secure: true });
+
+  // Send a response to indicate successful logout
+  return response.status(200).send({ message: "Logged out successfully" });
 };
