@@ -19,4 +19,17 @@ export const sendMessage = async (request, response) => {
   }
 };
 
-export const getMessages = async (request, response) => {};
+export const getMessages = async (request, response) => {
+  const senderId = request.id;
+  const { talkingToId: receiverId } = request.params;
+
+  try {
+    const messages = await Message.find({ senderId, receiverId });
+    response
+      .status(200)
+      .send({ meesage: "all of your messages", data: messages });
+  } catch (error) {
+    console.error(error);
+    return response.status(500).send({ message: "something went wrong" });
+  }
+};
